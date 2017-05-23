@@ -9,55 +9,6 @@
 #include "main.h"
 
 /**
- * @brief Communicate with DBus to set the timezone
- *
- * @see https://www.freedesktoctlp.org/wiki/Software/systemd/timedated
- *
- * @param tz The timezone to set the system to.
- *
- * @return A non-zero value on success
- */
-static int set_timezone(char *tz) {
-  // Connect to the system bus
-  sd_bus *bus = NULL;
-  int ret;
-  if((ret = sd_bus_open_system(&bus)) < 0) {
-    fprintf(stderr, "Failed to connect to system bus: %s\n", strerror(-ret));
-  }
-
-  // Connection was successful
-  else {
-    // Change the timezone
-    sd_bus_error error = SD_BUS_ERROR_NULL;
-    if((ret = sd_bus_call_method(bus,
-            // Service, object, interface
-            "org.freedesktop.timedate1",
-            "/org/freedesktop/timedate1",
-            "org.freedesktop.timedate1",
-
-            // Method, error container, return (NULL)
-            "SetTimezone", &error, NULL,
-
-            // Arguments (timezone, authentication prompt)
-            "sb", tz, 0)) < 0) {
-      fprintf(stderr, "Failed to issue SetTimezone(...): %s\n", error.message);
-    }
-
-    else {
-      // Confirm changes
-      printf("Timezone updated!\n");
-    }
-
-    // Free the error
-    sd_bus_error_free(&error);
-  }
-
-  // Cleanup
-  sd_bus_unref(bus);
-  return (ret == 0);
-}
-
-/**
  * @brief Callback method for libcurl to save data from a request
  *
  * @param content The bytes produced by libcurl
@@ -149,6 +100,75 @@ static int parse_tz(smem_t *data, char **ptr) {
 }
 
 /**
+ * @brief Communicate with DBus to set the timezone
+ *
+ * @see https://www.freedesktop.org/wiki/Software/systemd/timedated
+ *
+ * @param tz The timezone to set the system to.
+ *
+ * @return A non-zero value on success
+ */
+static int set_timezone(char *tz) {
+  // Connect to the system bus
+  sd_bus *bus = NULL;
+  int ret;
+  if((ret = sd_bus_open_system(&bus)) < 0) {
+    fprintf(stderr, "Failed to connect to system bus: %s\n", strerror(-ret));
+  }
+
+  // Connection was successful
+  else {
+    // Change the timezone
+    sd_bus_error error = SD_BUS_ERROR_NULL;
+    if((ret = sd_bus_call_method(bus,
+            // Service, object, interface
+            "org.freedesktop.timedate1",
+            "/org/freedesktop/timedate1",
+            "org.freedesktop.timedate1",
+
+            // Method, error container, return (NULL)
+            "SetTimezone", &error, NULL,
+
+            // Arguments (timezone, authentication prompt)
+            "sb", tz, 0)) < 0) {
+      fprintf(stderr, "Failed to issue SetTimezone(...): %s\n", error.message);
+    }
+
+    else {
+      // Confirm changes
+      printf("Timezone updated!\n");
+    }
+
+    // Free the error
+    sd_bus_error_free(&error);
+  }
+
+  // Cleanup
+  sd_bus_unref(bus);
+  return (ret == 0);
+}
+
+/**
+ * @brief Output usage information for the user
+ *
+ * @param argc The number of command-line arguments
+ * @param argv The command-line arguments
+ *
+ * @return An integer status code
+ */
+static int usage(int argc, char **argv) {
+  printf(
+    "usage: %s [timezone]\n\n"
+    "Dynamically update the system timezone based on GeoIP\n\n"
+    "Args:\n"
+    "  timezone: Optional, pass a timezone to set manually\n"
+    "    See: https://www.freedesktop.org/wiki/Software/systemd/timedated/\n",
+    argv[0]);
+
+  return 1;
+}
+
+/**
  * @brief Entry-point for the timezone updater
  *
  * @param argc The number of command-line arguments
@@ -157,7 +177,10 @@ static int parse_tz(smem_t *data, char **ptr) {
  * @return An integer status code
  */
 int main(int argc, char **argv) {
-  if(argc == 2) {
+  if(argc > 2) {
+    return usage(argc, argv);
+  }
+  else if(argc == 2) {
     return set_timezone(argv[1]);
   }
 
