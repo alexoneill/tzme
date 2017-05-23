@@ -6,6 +6,12 @@ SRC := src
 OBJ := obj
 
 EXEC_NAME := tzme
+SYSTEMD_SERVICE := $(EXEC_NAME).service
+
+# System
+ifeq ($(origin PREFIX), undefined)
+	PREFIX:= /usr
+endif
 
 ################################################################################
 
@@ -47,8 +53,17 @@ $(EXEC_NAME): $(SUPPORT_O) main.c
 $(OBJ):
 	mkdir -p "$(OBJ)"
 
+.PHONY: init
 init: $(OBJ)
 
+.PHONY: clean
 clean:
 	rm -rf ./$(OBJ)/
 	rm -rf $(EXEC_NAME) gmon.out
+
+# Distribute
+.PHONY: install
+install: all
+	cp $(EXEC_NAME) $(PREFIX)/bin/
+	cp $(SYSTEMD_SERVICE) $(PREFIX)/lib/systemd/system/
+
