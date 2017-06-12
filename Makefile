@@ -10,7 +10,7 @@ SYSTEMD_SERVICE := $(EXEC_NAME).service
 
 # System
 ifeq ($(origin PREFIX), undefined)
-	PREFIX:= /usr
+	PREFIX := /usr
 endif
 
 ################################################################################
@@ -64,6 +64,7 @@ clean:
 # Distribute
 .PHONY: install
 install: all
+	mkdir -p $(PREFIX)/bin $(PREFIX)/lib/systemd/system
 	cp $(EXEC_NAME) $(PREFIX)/bin/
 	cp $(SYSTEMD_SERVICE) $(PREFIX)/lib/systemd/system/
 
