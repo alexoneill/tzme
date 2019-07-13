@@ -5,3 +5,5 @@ After=network-online.target
 [Service]
 Type=oneshot
 ExecStart=/usr/bin/tzme
+User=root
+Group=root
