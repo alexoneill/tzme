@@ -39,13 +39,13 @@ debug: init $(LIB_NAME) $(EXEC_NAME)
 
 $(OBJ)/%.o: $(SRC)/%.c
 	@mkdir -p "$(dir $@)"
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) -c $^ -o $@
+	$(CXX) $(CXXFLAGS) -c $^ -o $@ $(LDFLAGS)
 
 ################################################################################
 
 # Executable
 $(EXEC_NAME): $(SUPPORT_O) main.c
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -o $@
+	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
 
 ################################################################################
 
